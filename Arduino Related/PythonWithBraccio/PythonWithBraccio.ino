@@ -29,7 +29,7 @@ Servo gripper;
 
 float x , y ,z , approachAngle;
 float a0 = 0, a1 = 90 , a2 = 90 , a3 = 90, a4 = 0.0 ,a5 = 20;
-
+bool isSwitchedOn = false;
 
 void setup() {  
 
@@ -76,9 +76,15 @@ void loop() {
   // the arm is aligned upwards  and the gripper is closed
                      //(step delay, M1, M2, M3, M4, M5, M6);
 
-
+  
   readAndPerformSerialTask(); //sets global x y z and there by angles
-  servoMovementWrapper(a0, a1, a2, a3, 0,  a5);
+  
+
+
+  if (isSwitchedOn == true){
+    servoMovementWrapper(a0, a1, a2, a3, a4,  a5);  
+  }
+  
 
 //  servoMovementWrapper(0, 160, 90, 90, 0,  60);
 
@@ -127,7 +133,39 @@ void readAndPerformSerialTask(){
 
       if (str.length() !=0){
 
-          if (str.startsWith("MoveLeft")){
+          if (str.startsWith("Power_On")){
+            
+            
+            isSwitchedOn = true;
+
+            Serial.println("Successful Powered On");
+          }
+
+          else if (str.startsWith("Power_Off")){
+
+            a0 = 0, a1 = 90 , a2 = 0 , a3 = 0, a4 =0, a5 = 20;
+            servoMovementWrapper(a0, a1, a2, a3, a4,  a5);
+            
+            isSwitchedOn = false;
+
+            Serial.println("Successful Powered off");
+            
+          }
+
+
+           else if (str.startsWith("SetAngles")){
+            //set global xyz,approach to teh position requested
+
+            a0 = getValue(str, ',', 1).toFloat();
+            a1 = getValue(str, ',', 2).toFloat();
+            a2 = getValue(str, ',', 3).toFloat();
+            a3 = getValue(str, ',', 4).toFloat();
+            a4 = getValue(str, ',', 5).toFloat();
+            a5 = getValue(str, ',', 6).toFloat();
+            Serial.println("Successful");
+          }
+          
+          else if (str.startsWith("MoveLeft")){
             Serial.println("CalledLeft");
           }
           
@@ -187,7 +225,7 @@ void readAndPerformSerialTask(){
 
           else if (str.startsWith("Get_Position")){
 
-            Serial.println("The current cords are: " + String(x) + ";" + String(y) + ";" + String(z) + 
+            Serial.println("isSwitchedOn : " + String(isSwitchedOn)+" The current cords are: " + String(x) + ";" + String(y) + ";" + String(z) + 
             " and angles are " + String(a0) + ";" + String(a1) + ";" + String(a2)+ ";" + String(a3)+ ";" + String(a4)+ ";" + String(a5) );
             
           }
