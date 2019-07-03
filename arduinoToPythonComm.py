@@ -8,7 +8,9 @@ Created on Thu Jun 27 11:09:12 2019
 import serial
 import time
 # "COM11" is the port that your Arduino board is connected.set it to port that your are using        
+import re
 
+import numpy as np
 
 class robot_arm():
     
@@ -30,12 +32,26 @@ class robot_arm():
     def getPosition(self):
         
         self.ser.write("Get_Position".encode('utf-8'))
-        return self.ser.readline()
+        
+        
+        retString = self.ser.readline() 
+        asStr = retString.decode('ASCII')
+        
+        m = re.match("isSwitchedOn : (.*) The current cords are: (.*) and angles are (.*)", asStr)
+        
+        
+        coords = np.float16(m.group(2).split(';'))
+        angles = np.float16(m.group(3).split(';'))
+        
+        return coords,angles
         
     
     def reachPosWithoutApp(self,x,y,z):
         
         self.ser.write("POS_WithoutApp,{},{},{}".format(x,y,z).encode('utf-8'))
+        
+        
+        
         return self.ser.readline()
         
         
@@ -72,10 +88,12 @@ if __name__ == '__main__':
     myRobot = robot_arm()
     myRobot.switchOn()
     myRobot.reachPosWithoutApp(142  ,-277,0)
+    
+    a,b = myRobot.getPosition()
     myRobot.hold(20)
-    myRobot.resetToHome()
     
-    
+#    myRobot.resetToHome()
+  
     
 #    myRobot.closeSerial()
 
